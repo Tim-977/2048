@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>2048 Game</title>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>2048 Game</h1>
+        <div class="game">
+            <div class="board" id="board">
+                {% for row in board %}
+                    {% for cell in row %}
+                        <div class="cell {% if cell %}{{ 'tile-' + cell|string }}{% endif %}" name="cell">{{ cell }}</div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <div class="controls">
+                <button onclick="move('up')">Up</button>
+                <button onclick="move('left')">Left</button>
+                <button onclick="move('right')">Right</button>
+                <button onclick="move('down')">Down</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function move(direction) {
+            const board = document.getElementsByClassName('cell');
+            let tiles = [];
+            for (let i = 0; i < board.length; i++) {
+                const cellValue = parseInt(board[i].innerText);
+                tiles.push(isNaN(cellValue) ? 0 : cellValue);
+            }
+
+            fetch('/move', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    direction: direction,
+                    board: tiles
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const newBoard = data.board;
+                for (let i = 0; i < board.length; i++) {
+                    board[i].innerText = newBoard[i];
+                    board[i].className = `cell ${newBoard[i] ? 'tile-' + newBoard[i] : ''}`;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
